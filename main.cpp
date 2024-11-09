@@ -3,27 +3,81 @@
 #include <math.h>
 #include <vector>
 
-struct Point {
+struct Point
+{
   float x, y;
 };
 
 std::vector<Point> points;
+int curveAlgorithm = 0;
 int selectedPointIndex = 2;
+bool addPointsEnabled = false;
 
-float factorial(int n) {
+float factorial(int n)
+{
   unsigned long long fact = 1;
 
-  for (int i = 1; i <= n; ++i) {
+  for (int i = 1; i <= n; ++i)
+  {
     fact *= i;
   }
   return fact;
 }
 
+/*
+// Función para calcular la tangente entre dos puntos
+Point calculateTangent(Point p0, Point p1)
+{
+  return {p1.x - p0.x, p1.y - p0.y}; // Tangente como la diferencia de los puntos consecutivos
+}
+
+// Función de Hermite para un par de puntos con sus tangentes
+std::pair<float, float> hermite(float t, Point p0, Point t0, Point p1, Point t1)
+{
+  float h1 = 2 * t * t * t - 3 * t * t + 1;
+  float h2 = -2 * t * t * t + 3 * t * t;
+  float h3 = t * t * t - 2 * t * t + t;
+  float h4 = t * t * t - t * t;
+
+  float x = h1 * p0.x + h2 * p1.x + h3 * t0.x + h4 * t1.x;
+  float y = h1 * p0.y + h2 * p1.y + h3 * t0.y + h4 * t1.y;
+
+  return {x, y};
+}
+
+// Función para dibujar la curva de Hermite entre los puntos de control
+void drawHermiteCurve()
+{
+  glBegin(GL_LINE_STRIP);
+
+  // Para cada par de puntos consecutivos, calcula la curva de Hermite
+  for (int i = 0; i < points.size() - 1; ++i)
+  {
+    Point p0 = points[i];
+    Point p1 = points[i + 1];
+
+    // Calcula las tangentes entre los puntos consecutivos
+    Point t0 = (i == 0) ? calculateTangent(p0, points[i + 2]) : calculateTangent(points[i - 1], p0);
+    Point t1 = (i + 2 < points.size()) ? calculateTangent(p1, points[i + 2]) : calculateTangent(p0, p1);
+
+    // Dibuja la curva Hermite para el segmento
+    for (float t = 0.0f; t <= 1.0f; t += 0.01f)
+    {
+      auto [x, y] = hermite(t, p0, t0, p1, t1);
+      glVertex2f(x, y);
+    }
+  }
+
+  glEnd();
+}
+*/
 // Función de interpolación de Bézier cúbica
-std::pair<float, float> bezierPoint(float t) {
+std::pair<float, float> bezierPoint(float t)
+{
 
   float x = 0.0f, y = 0.0f;
-  for (int i = 0; i < points.size(); i++) {
+  for (int i = 0; i < points.size(); i++)
+  {
     x += (factorial(points.size() - 1) /
           (factorial(i) * factorial(points.size() - 1 - i))) *
          pow(1 - t, points.size() - 1 - i) * pow(t, i) * points[i].x;
@@ -35,68 +89,82 @@ std::pair<float, float> bezierPoint(float t) {
   return {x, y};
 }
 
-void drawBezierCurve2D() {
-
-  // Dibujar la curva de Bézier
+void drawBezierCurve2D()
+{
   glColor3f(0.0f, 0.0f, 1.0f);
   glLineWidth(5.0f);
   glBegin(GL_LINE_STRIP);
-  for (float t = 0; t <= 1.0; t += 0.01) {
+  for (float t = 0; t <= 1.0; t += 0.01)
+  {
     auto [x, y] = bezierPoint(t);
     glVertex2f(x, y);
   }
   glEnd();
-
-  // glutSwapBuffers();
 }
 
-void drawPoints2D() {
+void drawPoints2D()
+{
   glPointSize(10.0f);
   glBegin(GL_POINTS);
-  for (const auto &point : points) {
+  for (const auto &point : points)
+  {
     glVertex2f(point.x, point.y);
   }
   glEnd();
-
-  // glutSwapBuffers();
 }
 
-// Función para dibujar la curva de Bézier
-void drawBezierCurve() {
-
-  // Dibujar la curva de Bézier
+void drawBezierCurve3D()
+{
   glColor3f(0.0f, 0.0f, 1.0f);
   glLineWidth(5.0f);
+  
   glBegin(GL_LINE_STRIP);
-  for (float t = 0; t <= 1.0; t += 0.01) {
+  for (float t = 0; t <= 1.0; t += 0.01)
+  {
     auto [x, y] = bezierPoint(t);
     glVertex3f(x, 10.0f, y);
     glVertex3f(x, 0.0f, y);
     glVertex3f(x, 10.0f, y);
   }
   glEnd();
+ 
+ /*  glBegin(GL_POLYGON);
+  for (float t = 0; t <= 1.0; t += 0.01)
+  {
+    auto [x, y] = bezierPoint(t);
+    glVertex3f(x, 10.0f, y);
+  }
+  for (float t = 1.0; t >= 0.0; t -= 0.01)
+  {
+    auto [x, y] = bezierPoint(t);
+    glVertex3f(x, 0.0f, y);
+  }
+  glEnd(); */
 
   // glutSwapBuffers();
 }
 // Función para dibujar los puntos
-void drawPoints() {
+void drawPoints()
+{
   glPointSize(10.0f);
   glBegin(GL_POINTS);
-  for (const auto &point : points) {
+  for (const auto &point : points)
+  {
     glVertex3f(point.x, 10.0f, point.y);
   }
   glEnd();
-
-  // glutSwapBuffers();
 }
 
-void printPoints() {
-  for (const auto &point : points) {
+void printPoints()
+{
+  for (const auto &point : points)
+  {
     std::cout << point.x << point.y << "\n";
   }
 }
 
-void display() {
+void display()
+{
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glViewport(0, 0, 400, 400);
@@ -105,6 +173,14 @@ void display() {
   glOrtho(-200.0, 200.0, -200.0, 200.0, -200.0, 200.0);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+  /*if (curveAlgorithm == 0)
+  {
+    drawHermiteCurve();
+  }
+  else if (curveAlgorithm == 1)
+  {
+    drawBezierCurve2D();
+  }*/
   drawBezierCurve2D();
   drawPoints2D();
   // Vista derecha (3D)
@@ -129,19 +205,20 @@ void display() {
   glEnd();
 
   drawPoints();
-
-  drawBezierCurve();
+  drawBezierCurve3D();
   //  printPoints();
-
   glutSwapBuffers();
 }
 
 // Función para detectar si se hizo clic en un punto
-int getPointIndexAt(float x, float y) {
-  for (int i = 0; i < points.size(); ++i) {
+int getPointIndexAt(float x, float y)
+{
+  for (int i = 0; i < points.size(); ++i)
+  {
     if ((x - points[i].x) * (x - points[i].x) +
             (y - points[i].y) * (y - points[i].y) <
-        100.0f) {
+        100.0f)
+    {
       return i;
     }
   }
@@ -149,48 +226,91 @@ int getPointIndexAt(float x, float y) {
 }
 
 // Manejador de eventos del mouse
-void mouseHandler(int button, int state, int x, int y) {
+void mouseHandler(int button, int state, int x, int y)
+{
 
-  std::cout << "x: " << x << " y: " << y << "\n";
-
+  // std::cout << "x: " << x << " y: " << y << "\n";
   float glX = (float)(x - (400.0f / 2));
   float glY = -(float)(y - (400.0f / 2));
-  std::cout << "En pantalla: " << glX << " " << glY << "\n";
-  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+  // std::cout << "En pantalla: " << glX << " " << glY << "\n";
+  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+  {
     int index = getPointIndexAt(glX, glY);
-    if (index != -1) {
+    if (index != -1)
+    {
       selectedPointIndex = index;
-      std::cout << "Seleccionado: " << selectedPointIndex << "\n";
-
-    } else {
+      // std::cout << "Seleccionado: " << selectedPointIndex << "\n";
+    }
+    else if (addPointsEnabled)
+    {
       points.push_back({glX, glY});
     }
-  } else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+  }
+  else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+  {
     selectedPointIndex = -1;
   }
   glutPostRedisplay();
 }
 
 // Manejador para arrastrar el punto
-void motionHandler(int x, int y) {
-  if (selectedPointIndex != -1) {
+void motionHandler(int x, int y)
+{
+  if (selectedPointIndex != -1)
+  {
     points[selectedPointIndex].x = (float)(x - (400.0f / 2));
     points[selectedPointIndex].y = -(float)(y - (400.0f / 2));
     glutPostRedisplay();
   }
 }
 
+void menuAddPointHandler(int option)
+{
+  switch (option)
+  {
+  case 1:
+    addPointsEnabled = true;
+    break;
+  case 2:
+    addPointsEnabled = false;
+    break;
+  }
+  glutPostRedisplay();
+}
+
+// Función de menú para activar o desactivar agregar puntos
+void menuPrincipalHandler(int option)
+{
+  switch (option)
+  {
+  default:
+    break;
+  }
+  glutPostRedisplay();
+}
+
+// Configuración del menú contextual
+void createContextMenu()
+{
+  int menuAgregarPuntos = glutCreateMenu(menuAddPointHandler);
+  glutAddMenuEntry("Activado", 1);
+  glutAddMenuEntry("Desactivar", 2);
+
+  int menu = glutCreateMenu(menuPrincipalHandler);
+  glutAddSubMenu("Agregar Puntos", menuAgregarPuntos);
+  glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
 // Configuración inicial de OpenGL
-void initGL() {
+void initGL()
+{
   glClearColor(1.0, 1.0, 1.0, 1.0);
   glEnable(GL_DEPTH_TEST);
-  //  glMatrixMode(GL_PROJECTION);
-  // glOrtho(-800.0, 800.0, -600.0, 600.0, -600.0, 600.0);
-  // glMatrixMode(GL_MODELVIEW);
 }
 
 // Función principal
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowSize(800, 400);
@@ -206,6 +326,7 @@ int main(int argc, char **argv) {
   glutMouseFunc(mouseHandler);
   glutMotionFunc(motionHandler);
 
+  createContextMenu();
   glutMainLoop();
   return 0;
 }
