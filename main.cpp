@@ -98,7 +98,9 @@ void drawBezierCurve2D()
   glBegin(GL_LINE_STRIP);
   for (float t = 0; t <= 1.0; t += 0.01)
   {
-    auto [x, y] = bezierPoint(t);
+    std::pair<float, float> result = bezierPoint(t);
+    float x = result.first;
+    float y = result.second;
     glVertex2f(x, y);
   }
   glEnd();
@@ -130,6 +132,27 @@ void drawBezierCurve3D()
   }
   glEnd();
 
+  /*  glBegin(GL_LINE_STRIP);
+   for (float t = 0; t <= 1.0; t += 0.01)
+   {
+     auto [x, y] = bezierPoint(t);
+     glVertex3f(x, 10.0f, y);
+     glVertex3f(x, 0.0f, y);
+     glVertex3f(x, 10.0f, y);
+   }
+   glEnd();
+   */
+  glBegin(GL_QUAD_STRIP);
+  for (float t = 0; t <= 1.0; t += 0.01)
+  {
+    std::pair<float, float> result = bezierPoint(t);
+    float x = result.first;
+    float y = result.second;
+    glVertex3f(x, 10.0f, y);
+    glVertex3f(x, 0.0f, y);
+  }
+  glEnd();
+
   // glutSwapBuffers();
 }
 
@@ -138,9 +161,9 @@ void drawPoints3D()
   glPointSize(5.0f);
   glColor3f(1.0f, 0.0f, 0.0f);
   glBegin(GL_POINTS);
-  for (const auto &point : points)
+  for (std::vector<Point>::const_iterator it = points.begin(); it != points.end(); ++it)
   {
-    glVertex3f(point.x, 20.0f, point.y);
+    glVertex2f(it->x, it->y);
   }
   glEnd();
 }
@@ -150,18 +173,18 @@ void drawPolilineas()
   glColor3f(0.0f, 1.0f, 1.0f);
   glLineWidth(2.0f);
   glBegin(GL_LINE_STRIP);
-  for (const auto &point : points)
+  for (std::vector<Point>::const_iterator it = points.begin(); it != points.end(); ++it)
   {
-    glVertex2f(point.x, point.y);
+    glVertex2f(it->x, it->y);
   }
   glEnd();
 }
 
 void printPoints()
 {
-  for (const auto &point : points)
+  for (std::vector<Point>::const_iterator it = points.begin(); it != points.end(); ++it)
   {
-    std::cout << point.x << point.y << "\n";
+    std::cout << it->x << it->y << "\n";
   }
 }
 
