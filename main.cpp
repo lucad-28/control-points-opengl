@@ -118,7 +118,7 @@ void drawBezierCurve3D()
   glColor3f(0.0f, 0.0f, 1.0f);
   glLineWidth(5.0f);
   
-  glBegin(GL_LINE_STRIP);
+ /*  glBegin(GL_LINE_STRIP);
   for (float t = 0; t <= 1.0; t += 0.01)
   {
     auto [x, y] = bezierPoint(t);
@@ -127,19 +127,15 @@ void drawBezierCurve3D()
     glVertex3f(x, 10.0f, y);
   }
   glEnd();
- 
- /*  glBegin(GL_POLYGON);
+  */
+ glBegin(GL_QUAD_STRIP);
   for (float t = 0; t <= 1.0; t += 0.01)
   {
     auto [x, y] = bezierPoint(t);
     glVertex3f(x, 10.0f, y);
-  }
-  for (float t = 1.0; t >= 0.0; t -= 0.01)
-  {
-    auto [x, y] = bezierPoint(t);
     glVertex3f(x, 0.0f, y);
   }
-  glEnd(); */
+  glEnd();
 
   // glutSwapBuffers();
 }
