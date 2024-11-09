@@ -12,6 +12,8 @@ std::vector<Point> points;
 int curveAlgorithm = 0;
 int selectedPointIndex = 2;
 bool addPointsEnabled = false;
+bool polilineaEnabled = false;
+bool controlPointsEnabled = false;
 
 float factorial(int n)
 {
@@ -104,7 +106,8 @@ void drawBezierCurve2D()
 
 void drawPoints2D()
 {
-  glPointSize(10.0f);
+  glPointSize(4.0f);
+  glColor3f(0.0f, 0.0f, 0.0f);
   glBegin(GL_POINTS);
   for (const auto &point : points)
   {
@@ -117,36 +120,39 @@ void drawBezierCurve3D()
 {
   glColor3f(0.0f, 0.0f, 1.0f);
   glLineWidth(5.0f);
-  
- /*  glBegin(GL_LINE_STRIP);
+
+  glBegin(GL_QUAD_STRIP);
   for (float t = 0; t <= 1.0; t += 0.01)
   {
-    auto [x, y] = bezierPoint(t);
-    glVertex3f(x, 10.0f, y);
-    glVertex3f(x, 0.0f, y);
-    glVertex3f(x, 10.0f, y);
-  }
-  glEnd();
-  */
- glBegin(GL_QUAD_STRIP);
-  for (float t = 0; t <= 1.0; t += 0.01)
-  {
-    auto [x, y] = bezierPoint(t);
-    glVertex3f(x, 10.0f, y);
-    glVertex3f(x, 0.0f, y);
+    std::pair<float, float> point = bezierPoint(t);
+    glVertex3f(point.first, 20.0f, point.second);
+    glVertex3f(point.first, 0.0f, point.second);
   }
   glEnd();
 
   // glutSwapBuffers();
 }
-// Función para dibujar los puntos
-void drawPoints()
+
+void drawPoints3D()
 {
-  glPointSize(10.0f);
+  glPointSize(5.0f);
+  glColor3f(1.0f, 0.0f, 0.0f);
   glBegin(GL_POINTS);
   for (const auto &point : points)
   {
-    glVertex3f(point.x, 10.0f, point.y);
+    glVertex3f(point.x, 20.0f, point.y);
+  }
+  glEnd();
+}
+
+void drawPolilineas()
+{
+  glColor3f(0.0f, 1.0f, 1.0f);
+  glLineWidth(2.0f);
+  glBegin(GL_LINE_STRIP);
+  for (const auto &point : points)
+  {
+    glVertex2f(point.x, point.y);
   }
   glEnd();
 }
@@ -157,6 +163,22 @@ void printPoints()
   {
     std::cout << point.x << point.y << "\n";
   }
+}
+
+void drawEjes()
+{
+  glLineWidth(1.0f);
+  glBegin(GL_LINES);
+  glColor3f(1.0f, 0.0f, 0.0f);
+  glVertex3f(-100.0f, 0.0f, 0.0f);
+  glVertex3f(100.0f, 0.0f, 0.0f);
+  glColor3f(0.0f, 1.0f, 0.0f);
+  glVertex3f(0.0f, 0.0f, -100.f);
+  glVertex3f(0.0f, 0.0f, 100.0f);
+  glColor3f(0.0f, 0.0f, 1.0f);
+  glVertex3f(0.0f, -100.0f, 0.0f);
+  glVertex3f(0.0f, 100.0f, 0.0f);
+  glEnd();
 }
 
 void display()
@@ -178,29 +200,21 @@ void display()
     drawBezierCurve2D();
   }*/
   drawBezierCurve2D();
-  drawPoints2D();
+
+  if (controlPointsEnabled)
+    drawPoints2D();
+  if (polilineaEnabled)
+    drawPolilineas();
   // Vista derecha (3D)
   glViewport(400, 0, 400, 400);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(45.0f, 1.0f, 1.0f, 200.0f);
+  gluPerspective(45.0f, 1.0f, 1.0f, 400.0f);
   glMatrixMode(GL_MODELVIEW);
-
   glLoadIdentity();
-
-  gluLookAt(30.0f, 50.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-
-  glBegin(GL_LINES);
-  glColor3f(0.0f, 0.0f, 0.0f);
-  glVertex3f(-100.0f, 0.0f, 0.0f);
-  glVertex3f(100.0f, 0.0f, 0.0f);
-  glVertex3f(0.0f, 0.0f, -100.f);
-  glVertex3f(0.0f, 0.0f, 100.0f);
-  glVertex3f(0.0f, -100.0f, 0.0f);
-  glVertex3f(0.0f, 100.0f, 0.0f);
-  glEnd();
-
-  drawPoints();
+  gluLookAt(30.0f, 50.0f, 200.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+  drawEjes();
+  drawPoints3D();
   drawBezierCurve3D();
   //  printPoints();
   glutSwapBuffers();
