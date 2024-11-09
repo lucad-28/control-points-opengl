@@ -12,8 +12,9 @@ std::vector<Point> points;
 int curveAlgorithm = 0;
 int selectedPointIndex = 2;
 bool addPointsEnabled = false;
-bool polilineaEnabled = false;
-bool controlPointsEnabled = false;
+bool dragPointEnabled = false;
+bool showPolilinea = false;
+bool showControlPoints = false;
 
 float factorial(int n)
 {
@@ -108,7 +109,7 @@ void drawBezierCurve2D()
 
 void drawPoints2D()
 {
-  glPointSize(4.0f);
+  glPointSize(5.0f);
   glColor3f(0.0f, 0.0f, 0.0f);
   glBegin(GL_POINTS);
   for (const auto &point : points)
@@ -171,7 +172,7 @@ void drawPoints3D()
 void drawPolilineas()
 {
   glColor3f(0.0f, 1.0f, 1.0f);
-  glLineWidth(2.0f);
+  glLineWidth(3.0f);
   glBegin(GL_LINE_STRIP);
   for (std::vector<Point>::const_iterator it = points.begin(); it != points.end(); ++it)
   {
@@ -204,6 +205,64 @@ void drawEjes()
   glEnd();
 }
 
+const float baseSize = 100.0f; // Tamaño de la base del cuadrado
+const float altura = 5.0f;     // Altura del cuadrado en 3D
+
+void drawPointsPlataforma()
+{
+  // Cara superior
+  glVertex3f(-baseSize / 2, altura / 2, -baseSize / 2);
+  glVertex3f(baseSize / 2, altura / 2, -baseSize / 2);
+  glVertex3f(baseSize / 2, altura / 2, baseSize / 2);
+  glVertex3f(-baseSize / 2, altura / 2, baseSize / 2);
+
+  // Cara inferior
+  glVertex3f(-baseSize / 2, -altura / 2, -baseSize / 2);
+  glVertex3f(baseSize / 2, -altura / 2, -baseSize / 2);
+  glVertex3f(baseSize / 2, -altura / 2, baseSize / 2);
+  glVertex3f(-baseSize / 2, -altura / 2, baseSize / 2);
+
+  // Cara frontal
+  glVertex3f(-baseSize / 2, -altura / 2, baseSize / 2);
+  glVertex3f(baseSize / 2, -altura / 2, baseSize / 2);
+  glVertex3f(baseSize / 2, altura / 2, baseSize / 2);
+  glVertex3f(-baseSize / 2, altura / 2, baseSize / 2);
+
+  // Cara trasera
+  glVertex3f(-baseSize / 2, -altura / 2, -baseSize / 2);
+  glVertex3f(baseSize / 2, -altura / 2, -baseSize / 2);
+  glVertex3f(baseSize / 2, altura / 2, -baseSize / 2);
+  glVertex3f(-baseSize / 2, altura / 2, -baseSize / 2);
+
+  // Cara izquierda
+  glVertex3f(-baseSize / 2, -altura / 2, -baseSize / 2);
+  glVertex3f(-baseSize / 2, -altura / 2, baseSize / 2);
+  glVertex3f(-baseSize / 2, altura / 2, baseSize / 2);
+  glVertex3f(-baseSize / 2, altura / 2, -baseSize / 2);
+
+  // Cara derecha
+  glVertex3f(baseSize / 2, -altura / 2, -baseSize / 2);
+  glVertex3f(baseSize / 2, -altura / 2, baseSize / 2);
+  glVertex3f(baseSize / 2, altura / 2, baseSize / 2);
+  glVertex3f(baseSize / 2, altura / 2, -baseSize / 2);
+}
+
+void drawPlataforma()
+{
+  glPushMatrix();
+  glTranslatef(0.0f, -altura, -0.0f);
+  glBegin(GL_QUADS);
+  glColor3f(0.902f, 1.0f, 0.988f);
+  drawPointsPlataforma();
+  glEnd();
+  glBegin(GL_LINES);
+  glColor3f(0.0f, 0.0f, 0.0f);
+  drawPointsPlataforma();
+  glEnd();
+
+  glPopMatrix();
+}
+
 void display()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -223,20 +282,20 @@ void display()
     drawBezierCurve2D();
   }*/
   drawBezierCurve2D();
-
-  if (controlPointsEnabled)
+  if (showControlPoints)
     drawPoints2D();
-  if (polilineaEnabled)
+  if (showPolilinea)
     drawPolilineas();
   // Vista derecha (3D)
   glViewport(400, 0, 400, 400);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(45.0f, 1.0f, 1.0f, 400.0f);
+  gluPerspective(45.0f, 1.0f, 1.0f, 800.0f);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  gluLookAt(30.0f, 50.0f, 200.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+  gluLookAt(50.0f, 100.0f, 200.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
   drawEjes();
+  drawPlataforma();
   drawPoints3D();
   drawBezierCurve3D();
   //  printPoints();
@@ -261,7 +320,6 @@ int getPointIndexAt(float x, float y)
 // Manejador de eventos del mouse
 void mouseHandler(int button, int state, int x, int y)
 {
-
   // std::cout << "x: " << x << " y: " << y << "\n";
   float glX = (float)(x - (400.0f / 2));
   float glY = -(float)(y - (400.0f / 2));
@@ -281,7 +339,8 @@ void mouseHandler(int button, int state, int x, int y)
   }
   else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
   {
-    selectedPointIndex = -1;
+    if (dragPointEnabled)
+      selectedPointIndex = -1;
   }
   glutPostRedisplay();
 }
@@ -289,12 +348,54 @@ void mouseHandler(int button, int state, int x, int y)
 // Manejador para arrastrar el punto
 void motionHandler(int x, int y)
 {
-  if (selectedPointIndex != -1)
+  if (selectedPointIndex != -1 && dragPointEnabled)
   {
     points[selectedPointIndex].x = (float)(x - (400.0f / 2));
     points[selectedPointIndex].y = -(float)(y - (400.0f / 2));
     glutPostRedisplay();
   }
+}
+
+void menuDragPointHandler(int option)
+{
+  switch (option)
+  {
+  case 1:
+    dragPointEnabled = true;
+    break;
+  case 2:
+    dragPointEnabled = false;
+    break;
+  }
+  glutPostRedisplay();
+}
+
+void menuShowControlPoints(int option)
+{
+  switch (option)
+  {
+  case 1:
+    showControlPoints = true;
+    break;
+  case 2:
+    showControlPoints = false;
+    break;
+  }
+  glutPostRedisplay();
+}
+
+void menuShowPolilineas(int option)
+{
+  switch (option)
+  {
+  case 1:
+    showPolilinea = true;
+    break;
+  case 2:
+    showPolilinea = false;
+    break;
+  }
+  glutPostRedisplay();
 }
 
 void menuAddPointHandler(int option)
@@ -326,11 +427,26 @@ void menuPrincipalHandler(int option)
 void createContextMenu()
 {
   int menuAgregarPuntos = glutCreateMenu(menuAddPointHandler);
-  glutAddMenuEntry("Activado", 1);
+  glutAddMenuEntry("Activar", 1);
+  glutAddMenuEntry("Desactivar", 2);
+
+  int menuDragPoint = glutCreateMenu(menuDragPointHandler);
+  glutAddMenuEntry("Activar", 1);
+  glutAddMenuEntry("Desactivar", 2);
+
+  int menuControlPoints = glutCreateMenu(menuShowControlPoints);
+  glutAddMenuEntry("Activar", 1);
+  glutAddMenuEntry("Desactivar", 2);
+
+  int menuPolilineas = glutCreateMenu(menuShowPolilineas);
+  glutAddMenuEntry("Activar", 1);
   glutAddMenuEntry("Desactivar", 2);
 
   int menu = glutCreateMenu(menuPrincipalHandler);
   glutAddSubMenu("Agregar Puntos", menuAgregarPuntos);
+  glutAddSubMenu("Arrastrar Puntos", menuDragPoint);
+  glutAddSubMenu("Mostrar Puntos de Control", menuControlPoints);
+  glutAddSubMenu("Mostrar Polilineas", menuPolilineas);
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
