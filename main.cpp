@@ -108,7 +108,7 @@ void drawCamul2D() {
 }
 
 // Dibuja la curva usando la interpolación Catmull-Rom
-void drawCatmullRomSpline() {
+void drawCamulFluido3D() {
   glColor3f(1.0, 0.0, 0.0); // Color de la curva
   glLineWidth(2.0);
   glBegin(GL_QUAD_STRIP);
@@ -131,7 +131,7 @@ void drawCatmullRomSpline() {
 }
 
 // Dibuja la curva (sólo para visualización)
-void drawCurveSegmentada() {
+void drawCamulSuperficie3D() {
   glColor3ub(1.0, 0.0, 1.0);
   glLineWidth(2.0f);
   glBegin(GL_QUAD_STRIP);
@@ -294,7 +294,7 @@ void display() {
   glRotatef(ang[0], 1.0f, 0.0f, 0.0f);
   glRotatef(ang[1], 0.0f, 1.0f, 0.0f);
   glRotatef(ang[2], 1.0f, 0.0f, 1.0f);
-  drawCurveSegmentada();
+  drawCamulSuperficie3D();
 
   glPopMatrix();
   //  printPoints();
@@ -317,7 +317,7 @@ void display() {
   glRotatef(ang3[1], 0.0f, 1.0f, 0.0f);
   glRotatef(ang3[2], 1.0f, 0.0f, 1.0f);
 
-  drawCatmullRomSpline();
+  drawCamulFluido3D();
   glPopMatrix();
 
   glutSwapBuffers();
